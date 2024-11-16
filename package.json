@@ -1,0 +1,16 @@
+{
+  "name": "apibreaknews",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index",
+    "dev": "nodemon index"
+  },
+  "author": "Cristian Mitidieri",
+  "license": "ISC",
+  "description": "API for SPA Breaking News",
+  "dependencies": {
+    "express": "^4.21.1",
+    "nodemon": "^3.1.7"
+  }
+}
