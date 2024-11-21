@@ -5,7 +5,7 @@ import News from "../models/News.js";
  * @param {Object} body - Dados da notícia.
  * @returns {Promise<Object>} - Notícia criada.
  */
-const createService = async (body) => {
+export const createService = async (body) => {
     return await News.create(body);
 };
 
@@ -15,7 +15,7 @@ const createService = async (body) => {
  * @param {number} limit - Número máximo de resultados.
  * @returns {Promise<Array>} - Lista de notícias.
  */
-const findAllService = async (offset, limit) => {
+export const findAllService = async (offset, limit) => {
     return await News.find()
         .sort({ _id: -1 }) // Ordena em ordem decrescente por ID
         .skip(offset) // Ignora os primeiros `offset` documentos
@@ -27,12 +27,10 @@ const findAllService = async (offset, limit) => {
  * Conta o número total de notícias no banco de dados.
  * @returns {Promise<number>} - Número total de documentos.
  */
-const countNews = async () => {
+export const countNews = async () => {
     return await News.countDocuments();
 };
 
-export {
-    createService,
-    findAllService,
-    countNews
-};
+export const topNewsService = () => News.findOne().sort({ _id: -1 }).populate("user");
+
+export const findByIdService = (id) => News.findById(id).populate("user");
