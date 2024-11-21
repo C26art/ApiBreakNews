@@ -1,10 +1,38 @@
 import News from "../models/News.js";
-const createService = (body) => News.create(body);
-const findAllService = () => News.find();
 
+/**
+ * Cria uma nova notícia no banco de dados.
+ * @param {Object} body - Dados da notícia.
+ * @returns {Promise<Object>} - Notícia criada.
+ */
+const createService = async (body) => {
+    return await News.create(body);
+};
 
+/**
+ * Busca todas as notícias com paginação e ordenação.
+ * @param {number} offset - Ponto inicial para a busca.
+ * @param {number} limit - Número máximo de resultados.
+ * @returns {Promise<Array>} - Lista de notícias.
+ */
+const findAllService = async (offset, limit) => {
+    return await News.find()
+        .sort({ _id: -1 }) // Ordena em ordem decrescente por ID
+        .skip(offset) // Ignora os primeiros `offset` documentos
+        .limit(limit) // Limita a busca a `limit` documentos
+        .populate("user"); // Popula o campo de referência ao usuário
+};
 
-export default {
+/**
+ * Conta o número total de notícias no banco de dados.
+ * @returns {Promise<number>} - Número total de documentos.
+ */
+const countNews = async () => {
+    return await News.countDocuments();
+};
+
+export {
     createService,
     findAllService,
+    countNews
 };
