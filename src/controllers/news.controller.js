@@ -1,4 +1,4 @@
-import { createService, findAllService, countNews, topNewsService, findByIdService } from "../services/news.service.js";
+import { createService, findAllService, countNews, topNewsService, findByIdService, searchByTitleService, byUserService, updateService } from "../services/news.service.js";
 
 export const create = async (req, res) => {
     try {
@@ -79,19 +79,19 @@ export const topNews = async (req, res) => {
         }
 
         res.send({
-            news: {
-                id: news._id,
-                title: news.title,
-                text: news.text,
-                banner: news.banner,
-                likes: news.likes,
-                comments: news.comments,
+            results: news.map((item) => ({
+                id: item._id,
+                title: item.title,
+                text: item.text,
+                banner: item.banner,
+                likes: item.likes,
+                comments: item.comments,
                 user: {
-                    name: news.user.name,
-                    username: news.user.username,
-                    avatar: news.user.avatar,
+                    name: item.user.name,
+                    username: item.user.username,
+                    avatar: item.user.avatar,
                 },
-            },
+            })),
         });
     } catch (err) {
         res.status(500).send({ message: err.message });
@@ -101,7 +101,11 @@ export const topNews = async (req, res) => {
 export const findById = async (req, res) => {
     try {
         const { id } = req.params;
-        const news = await findByIdService(id);
+        const news = await findByIdService(id).populate("user");
+
+        if (!news) {
+            return res.status(404).send({ message: "Post not found." });
+        }
 
         return res.send({
             news: {
@@ -111,12 +115,72 @@ export const findById = async (req, res) => {
                 banner: news.banner,
                 likes: news.likes,
                 comments: news.comments,
-                user: {
-                    name: news.user.name,
-                    username: news.user.username,
-                    avatar: news.user.avatar,
-                },
+                user: news.user
+                    ? {
+                          name: news.user.name,
+                          username: news.user.username,
+                          avatar: news.user.avatar,
+                      }
+                    : null,
             },
+        });
+    } catch (err) {
+        res.status(500).send({ message: err.message });
+    }
+};
+
+export const searchByTitle = async (req, res) => {
+    try {
+        const { title } = req.query;
+        const newsList = await searchByTitleService(title).populate("user");
+
+        if (newsList.length === 0) {
+            return res.status(404).send({ message: "There are no posts with this title." });
+        }
+
+        return res.send({
+            results: newsList.map((news) => ({
+                id: news._id,
+                title: news.title,
+                text: news.text,
+                banner: news.banner,
+                likes: news.likes,
+                comments: news.comments,
+                user: news.user
+                    ? {
+                          name: news.user.name,
+                          username: news.user.username,
+                          avatar: news.user.avatar,
+                      }
+                    : null,
+            })),
+        });
+    } catch (err) {
+        res.status(500).send({ message: err.message });
+    }
+};
+
+export const byUser = async (req, res) => {
+    try {
+        const id = req.userId;
+        const newsList = await byUserService(id);
+
+        return res.send({
+            results: newsList.map((news) => ({
+                id: news._id,
+                title: news.title,
+                text: news.text,
+                banner: news.banner,
+                likes: news.likes,
+                comments: news.comments,
+                user: news.user
+                    ? {
+                          name: news.user.name,
+                          username: news.user.username,
+                          avatar: news.user.avatar,
+                      }
+                    : null,
+            })),
         });
 
     } catch (err) {
@@ -124,3 +188,27 @@ export const findById = async (req, res) => {
     }
 };
 
+export const update = async (req, res) => {
+    try {
+        const { title, text, banner } = req.body;
+        const { id } = req.params;
+
+        if(!title && !text && !banner) {
+            res.status(400).send({ message: "Submit at least one field to update the post." });
+        }
+
+        const news = await findByIdService(id);
+
+        if(news.user._id != req.userId){
+            res.status(400).send({ message: "You didn't update this post." });
+        }
+
+        await updateService(id, title, text, banner);
+
+        return res.send({ message: "Post successfully update."});
+
+    } catch (err) {
+        res.status(500).send({ message: err.message });
+    }
+
+};
