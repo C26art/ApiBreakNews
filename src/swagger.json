@@ -10,17 +10,13 @@
     },
     "servers": [
       {
-        "url": "https://api-breakingnews.onrender.com",
+        "url": "https://apibreaknews-pkgp.onrender.com",
         "description": "Render"
       },
   
       {
         "url": "http://localhost:3000",
         "description": "Local"
-      },
-      {
-        "url": "https://breakingnews.herokuapp.com",
-        "description": "Heroku"
       }
     ],
     "paths": {
